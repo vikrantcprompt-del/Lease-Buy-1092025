@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Laptop Lease vs. Buy Calculator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+        .tooltip {
+            position: relative;
+            display: inline-block;
+        }
+        .tooltip .tooltiptext {
+            visibility: hidden;
+            width: 220px;
+            background-color: #555;
+            color: #fff;
+            text-align: left;
+            border-radius: 6px;
+            padding: 8px;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -110px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .tooltip:hover .tooltiptext {
+            visibility: visible;
+            opacity: 1;
+        }
+        .info-icon {
+            cursor: pointer;
+            color: #4B5563;
+        }
+        .output-table th, .output-table td {
+            padding: 12px 15px;
+        }
+        .loader {
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #3498db;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 text-gray-800">
+
+    <div class="container mx-auto p-4 md:p-8 max-w-7xl">
+        <header class="text-center mb-8">
+            <h1 class="text-3xl md:text-4xl font-bold text-gray-900">Laptop Lease vs. Buy Calculator</h1>
+            <p class="text-md text-gray-600 mt-2">An advanced financial tool to compare the total cost of ownership.</p>
+        </header>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Input Section -->
+            <div class="lg:col-span-1 bg-white p-6 rounded-2xl shadow-lg">
+                <h2 class="text-2xl font-semibold mb-6 border-b pb-3">Input Parameters</h2>
+
+                <!-- General Inputs -->
+                <div class="space-y-4">
+                    <div>
+                        <label for="numLaptops" class="block text-sm font-medium text-gray-700">Number of Laptops</label>
+                        <input type="number" id="numLaptops" value="50" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="avgPrice" class="block text-sm font-medium text-gray-700">Average Price per Laptop (₹)</label>
+                        <input type="number" id="avgPrice" value="60000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="duration" class="block text-sm font-medium text-gray-700">Duration (Years)</label>
+                        <input type="number" id="duration" value="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="discountRate" class="block text-sm font-medium text-gray-700">Company Discount Rate (%)</label>
+                        <input type="number" id="discountRate" value="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="taxRate" class="block text-sm font-medium text-gray-700">Corporate Tax Rate (%)</label>
+                        <input type="number" id="taxRate" value="25.7" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- Buy Scenario -->
+                <h3 class="text-xl font-semibold mt-8 mb-4 border-b pb-2">Buy Scenario</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="financeMode" class="block text-sm font-medium text-gray-700">Mode of Finance</label>
+                        <select id="financeMode" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="equity">Fund by Equity</option>
+                            <option value="loan">Fund by Loan</option>
+                        </select>
+                    </div>
+                    <div id="equityCostContainer">
+                        <label for="equityCost" class="block text-sm font-medium text-gray-700">Cost of Equity / Opportunity Cost (%)</label>
+                        <input type="number" id="equityCost" value="12" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div id="loanCostContainer" class="hidden space-y-4">
+                        <div>
+                            <label for="loanInterest" class="block text-sm font-medium text-gray-700">Loan Interest Rate (%)</label>
+                            <input type="number" id="loanInterest" value="9" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                        <div>
+                            <label for="downPaymentRate" class="block text-sm font-medium text-gray-700">Down Payment (%)</label>
+                            <input type="number" id="downPaymentRate" value="15" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                        </div>
+                    </div>
+                    <div>
+                        <label for="depreciationPeriod" class="block text-sm font-medium text-gray-700">Depreciation Period (Years)</label>
+                        <input type="number" id="depreciationPeriod" value="3" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="residualValueRate" class="block text-sm font-medium text-gray-700">Residual Value Rate (%)</label>
+                        <input type="number" id="residualValueRate" value="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+                
+                <!-- Lease Scenario -->
+                <h3 class="text-xl font-semibold mt-8 mb-4 border-b pb-2">Lease Scenario</h3>
+                 <div class="space-y-4">
+                     <div>
+                        <label for="monthlyRentalRate" class="block text-sm font-medium text-gray-700">Monthly Rental Rate (%)</label>
+                        <input type="number" id="monthlyRentalRate" value="4.0" step="0.1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="advancePaymentRate" class="block text-sm font-medium text-gray-700">Advance Payment (%)</label>
+                        <input type="number" id="advancePaymentRate" value="0" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <!-- Cost Drivers -->
+                <h3 class="text-xl font-semibold mt-8 mb-4 border-b pb-2">Cost Drivers</h3>
+                <div class="space-y-4">
+                    <div>
+                         <label for="laptopsPerIT" class="block text-sm font-medium text-gray-700"># Laptops Managed per IT Person</label>
+                        <input type="number" id="laptopsPerIT" value="50" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="avgITSalary" class="block text-sm font-medium text-gray-700">Avg. Monthly Salary of IT Person (₹)</label>
+                        <input type="number" id="avgITSalary" value="40000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                     <div>
+                        <label for="avgEmpSalary" class="block text-sm font-medium text-gray-700">Avg. Monthly Salary of Employee (₹)</label>
+                        <input type="number" id="avgEmpSalary" value="40000" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                    <div>
+                        <label for="productivityLoss" class="block text-sm font-medium text-gray-700">Loss of Productivity (%)</label>
+                        <input type="number" id="productivityLoss" value="20" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                 <!-- Internal Use -->
+                <h3 class="text-xl font-semibold mt-8 mb-4 border-b pb-2">Internal Use (Lease)</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label for="commission" class="block text-sm font-medium text-gray-700">Sales Person's Commission (%)</label>
+                         <select id="commission" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                            <option value="1">1%</option><option value="2">2%</option><option value="3">3%</option>
+                            <option value="4">4%</option><option value="5" selected>5%</option><option value="6">6%</option>
+                            <option value="7">7%</option><option value="8">8%</option><option value="9">9%</option>
+                            <option value="10">10%</option><option value="11">11%</option><option value="12">12%</option>
+                            <option value="13">13%</option><option value="14">14%</option><option value="15">15%</option>
+                         </select>
+                    </div>
+                    <div>
+                        <label for="financingCost" class="block text-sm font-medium text-gray-700">Financing Cost (%)</label>
+                        <input type="number" id="financingCost" value="10" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    </div>
+                </div>
+
+                <div class="mt-8">
+                     <button id="calculateBtn" class="w-full bg-indigo-600 text-white font-semibold py-3 px-4 rounded-lg shadow-md hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition duration-150 ease-in-out">
+                        Calculate
+                    </button>
+                </div>
+
+            </div>
+
+            <!-- Output Section -->
+            <div class="lg:col-span-2 space-y-8">
+                <div id="loader" class="hidden">
+                    <div class="loader"></div>
+                </div>
+                <div id="outputContainer" class="space-y-8 hidden">
+                     <!-- Summary Card -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                         <h2 class="text-2xl font-semibold mb-4 text-center">Lease Vs. Buy Financial Comparison</h2>
+                         <div id="summary" class="overflow-x-auto"></div>
+                    </div>
+                    <!-- Buy Scenario Output -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-2xl font-semibold mb-4 text-center">Buy Option - Cash Flow Details</h2>
+                        <div id="buyOutput" class="overflow-x-auto"></div>
+                    </div>
+                    <!-- Lease Scenario Output -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-2xl font-semibold mb-4 text-center">Lease Option - Cash Flow Details</h2>
+                        <div id="leaseOutput" class="overflow-x-auto"></div>
+                    </div>
+                     <!-- Internal Use Table -->
+                    <div class="bg-white p-6 rounded-2xl shadow-lg">
+                        <h2 class="text-2xl font-semibold mb-4 text-center">Internal Reference (Lease Profitability)</h2>
+                        <div id="internalOutput" class="overflow-x-auto"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+
+        const calculateBtn = document.getElementById('calculateBtn');
+        const financeMode = document.getElementById('financeMode');
+        const equityCostContainer = document.getElementById('equityCostContainer');
+        const loanCostContainer = document.getElementById('loanCostContainer');
+        const loader = document.getElementById('loader');
+        const outputContainer = document.getElementById('outputContainer');
+
+        // Initial setup for finance mode visibility
+        toggleFinanceFields(); 
+
+        financeMode.addEventListener('change', toggleFinanceFields);
+        calculateBtn.addEventListener('click', () => {
+            outputContainer.classList.add('hidden');
+            loader.classList.remove('hidden');
+            // Simulate calculation delay
+            setTimeout(() => {
+                calculate();
+                loader.classList.add('hidden');
+                outputContainer.classList.remove('hidden');
+                outputContainer.scrollIntoView({ behavior: 'smooth' });
+            }, 500);
+        });
+
+        // Auto-calculate on load
+        calculate();
+        outputContainer.classList.remove('hidden');
+
+        function toggleFinanceFields() {
+            if (financeMode.value === 'equity') {
+                equityCostContainer.classList.remove('hidden');
+                loanCostContainer.classList.add('hidden');
+            } else {
+                equityCostContainer.classList.add('hidden');
+                loanCostContainer.classList.remove('hidden');
+            }
+        }
+        
+        function getFloatValue(id) {
+            return parseFloat(document.getElementById(id).value) || 0;
+        }
+        
+        function formatCurrency(value) {
+            return `₹ ${Math.round(value).toLocaleString('en-IN')}`;
+        }
+
+        function npv(rate, cashflows) {
+            let npvValue = 0;
+            for (let i = 0; i < cashflows.length; i++) {
+                npvValue += cashflows[i] / Math.pow(1 + rate, i + 1);
+            }
+            return npvValue;
+        }
+
+        function createInfoTooltip(text) {
+             return `<div class="tooltip inline-block ml-1">
+                        <svg class="w-4 h-4 text-gray-500 info-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        <span class="tooltiptext">${text}</span>
+                    </div>`;
+        }
+        
+        function calculate() {
+            // Get all input values
+            const numLaptops = getFloatValue('numLaptops');
+            const avgPrice = getFloatValue('avgPrice');
+            const duration = getFloatValue('duration');
+            const discountRate = getFloatValue('discountRate') / 100;
+            const taxRate = getFloatValue('taxRate') / 100;
+            
+            // Buy scenario inputs
+            const financeModeVal = document.getElementById('financeMode').value;
+            const equityCost = getFloatValue('equityCost') / 100;
+            const loanInterest = getFloatValue('loanInterest') / 100;
+            const downPaymentRate = getFloatValue('downPaymentRate') / 100;
+            const depreciationPeriod = getFloatValue('depreciationPeriod');
+            const residualValueRate = getFloatValue('residualValueRate') / 100;
+
+            // Lease scenario inputs
+            const monthlyRentalRate = getFloatValue('monthlyRentalRate') / 100;
+            const advancePaymentRate = getFloatValue('advancePaymentRate') / 100;
+
+            // Cost Drivers
+            const laptopsPerIT = getFloatValue('laptopsPerIT');
+            const avgITSalary = getFloatValue('avgITSalary');
+            const avgEmpSalary = getFloatValue('avgEmpSalary');
+            const productivityLossRate = getFloatValue('productivityLoss') / 100;
+            
+            // Internal use
+            const commissionRate = getFloatValue('commission') / 100;
+            const financingCostRate = getFloatValue('financingCost') / 100;
+            
+            const totalInitialCost = numLaptops * avgPrice;
+            
+            // --- Buy Scenario Calculation ---
+            let initialOutlayBuy = totalInitialCost;
+            let loanAmount = 0;
+            if (financeModeVal === 'loan') {
+                const downPaymentAmount = totalInitialCost * downPaymentRate;
+                initialOutlayBuy = downPaymentAmount;
+                loanAmount = totalInitialCost - downPaymentAmount;
+            }
+
+            const buyOutflows = {
+                initialOutlay: [initialOutlayBuy],
+                financingCost: [],
+                maintenance: [],
+                productivityLoss: []
+            };
+            const buyInflows = {
+                depreciationBenefit: [],
+                interestBenefit: [],
+                residualValue: []
+            };
+
+            const annualDepreciation = totalInitialCost / depreciationPeriod;
+            const itStaffCount = Math.ceil(numLaptops / laptopsPerIT);
+            const annualMgmtCost = itStaffCount * avgITSalary * 12;
+
+            let remainingLoan = loanAmount;
+            
+            for (let i = 1; i <= duration; i++) {
+                // Outflows
+                let currentFinancingCost = 0;
+                if (financeModeVal === 'equity') {
+                    currentFinancingCost = totalInitialCost * equityCost;
+                } else { // loan
+                    const interestPayment = remainingLoan * loanInterest;
+                    const principalPayment = (loanAmount / duration); // simple straight line
+                    currentFinancingCost = interestPayment + principalPayment;
+                    remainingLoan -= principalPayment;
+                    buyInflows.interestBenefit.push(interestPayment * taxRate);
+                }
+                buyOutflows.financingCost.push(currentFinancingCost);
+                buyOutflows.maintenance.push(annualMgmtCost); // Simplified - includes mgmt and maintenance
+                buyOutflows.productivityLoss.push(numLaptops * avgEmpSalary * 12 * productivityLossRate);
+
+                // Inflows
+                if (i <= depreciationPeriod) {
+                    buyInflows.depreciationBenefit.push(annualDepreciation * taxRate);
+                } else {
+                    buyInflows.depreciationBenefit.push(0);
+                }
+            }
+
+            buyInflows.residualValue = Array(duration).fill(0);
+            buyInflows.residualValue[duration - 1] = totalInitialCost * residualValueRate;
+            
+            // Calculate NPVs for Buy Scenario
+            const pvInitialOutlay = buyOutflows.initialOutlay[0];
+            const pvFinancingCost = npv(discountRate, buyOutflows.financingCost);
+            const pvMaintenance = npv(discountRate, buyOutflows.maintenance);
+            const pvProductivityLossBuy = npv(discountRate, buyOutflows.productivityLoss);
+            const pvDepreciationBenefit = npv(discountRate, buyInflows.depreciationBenefit);
+            const pvInterestBenefit = financeModeVal === 'loan' ? npv(discountRate, buyInflows.interestBenefit) : 0;
+            const pvResidualValue = buyInflows.residualValue[duration-1] / Math.pow(1 + discountRate, duration);
+            
+            const totalBuyOutflowPV = pvInitialOutlay + pvFinancingCost + pvMaintenance + pvProductivityLossBuy;
+            const totalBuyInflowPV = pvDepreciationBenefit + pvInterestBenefit + pvResidualValue;
+            const netBuyCostPV = totalBuyOutflowPV - totalBuyInflowPV;
+
+            // --- Lease Scenario Calculation ---
+            const advancePaymentAmount = totalInitialCost * advancePaymentRate;
+            const totalLeaseRental = totalInitialCost * monthlyRentalRate * 12 * duration;
+            const annualRecognizedLeaseExpense = totalLeaseRental / duration;
+            // The security deposit does not reduce the installment amount
+            const totalInstallments = totalLeaseRental;
+            const annualInstallment = totalInstallments / duration;
+
+            const leaseOutflows = {
+                initialOutlay: [advancePaymentAmount],
+                rent: [],
+                productivityLoss: []
+            };
+            const leaseInflows = {
+                taxBenefit: [],
+                depositRefund: []
+            };
+
+            for (let i = 1; i <= duration; i++) {
+                leaseOutflows.rent.push(annualInstallment);
+                leaseOutflows.productivityLoss.push(numLaptops * avgEmpSalary * 12 * (productivityLossRate/4)); // Assuming leasing has lower productivity loss
+                leaseInflows.taxBenefit.push(annualRecognizedLeaseExpense * taxRate);
+            }
+            
+            // The deposit is refunded at the end of the period
+            leaseInflows.depositRefund = Array(duration).fill(0);
+            leaseInflows.depositRefund[duration - 1] = advancePaymentAmount;
+
+            const pvInitialOutlayLease = advancePaymentAmount;
+            const pvRent = npv(discountRate, leaseOutflows.rent);
+            const pvProductivityLossLease = npv(discountRate, leaseOutflows.productivityLoss);
+            const pvTaxBenefit = npv(discountRate, leaseInflows.taxBenefit);
+            const pvDepositRefund = leaseInflows.depositRefund[duration - 1] / Math.pow(1 + discountRate, duration);
+
+            const totalLeaseOutflowPV = pvInitialOutlayLease + pvRent + pvProductivityLossLease;
+            const totalLeaseInflowPV = pvTaxBenefit + pvDepositRefund;
+            const netLeaseCostPV = totalLeaseOutflowPV - totalLeaseInflowPV;
+            
+            // --- Render Tables ---
+            renderBuyTable(buyOutflows, buyInflows, duration, financeModeVal, totalInitialCost);
+            renderLeaseTable(leaseOutflows, leaseInflows, duration);
+            renderSummaryTable(netBuyCostPV, netLeaseCostPV, totalBuyOutflowPV, totalBuyInflowPV, totalLeaseOutflowPV, totalLeaseInflowPV);
+            renderInternalTable(totalInitialCost, duration, totalLeaseRental, commissionRate, financingCostRate);
+        }
+
+        function generateTableHeader(duration) {
+            let header = '<tr class="bg-gray-100 text-left text-sm font-semibold uppercase tracking-wider text-gray-600"><th>Particulars</th>';
+            for (let i = 0; i <= duration; i++) {
+                header += `<th class="text-right">Year ${i}</th>`;
+            }
+            header += '<th class="text-right">Total PV</th></tr>';
+            return header;
+        }
+
+        function renderBuyTable(outflows, inflows, duration, financeModeVal, initialCost) {
+            const discountRate = getFloatValue('discountRate') / 100;
+            let table = '<table class="w-full text-sm text-left text-gray-500 output-table"><tbody>';
+            table += generateTableHeader(duration);
+
+            // OUTFLOWS
+            table += '<tr class="bg-gray-200 font-semibold"><td colspan="'+(duration+3)+'">A. CASH OUTFLOWS</td></tr>';
+            
+            let initialOutlayTooltipText = 'Upfront cash payment to purchase laptops when funded by equity.';
+            if (financeModeVal === 'loan') {
+                initialOutlayTooltipText = 'Down payment for the loan.<br><b>Formula:</b> Total Cost * Down Payment %';
+            }
+            table += `<tr><td>Initial Outlay ${createInfoTooltip(initialOutlayTooltipText)}</td><td class="text-right">${formatCurrency(outflows.initialOutlay[0])}</td>${Array(duration).fill('<td class="text-right"> - </td>').join('')}<td class="text-right">${formatCurrency(outflows.initialOutlay[0])}</td></tr>`;
+            
+            const financingLabel = financeModeVal === 'equity' ? `Opportunity Cost ${createInfoTooltip('Cost of using internal funds, calculated as (Initial Outlay * Cost of Equity).')}` : `Loan Repayments (P+I) ${createInfoTooltip('Total annual payment towards the loan, including principal and interest.')}`;
+            table += `<tr><td>${financingLabel}</td><td class="text-right"> - </td>`;
+            outflows.financingCost.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, outflows.financingCost))}</td></tr>`;
+
+            table += `<tr><td>Annual Management & Maintenance ${createInfoTooltip('Annual cost of IT staff to manage laptops, calculated as (IT Staff Count * Avg IT Salary * 12).')}</td><td class="text-right"> - </td>`;
+            outflows.maintenance.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, outflows.maintenance))}</td></tr>`;
+
+            table += `<tr><td>Productivity Loss ${createInfoTooltip('Cost of employee downtime due to IT issues, calculated as (Total Employee Salary * Productivity Loss %).')}</td><td class="text-right"> - </td>`;
+            outflows.productivityLoss.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, outflows.productivityLoss))}</td></tr>`;
+
+            // INFLOWS
+            table += '<tr class="bg-gray-200 font-semibold"><td colspan="'+(duration+3)+'">B. CASH INFLOWS</td></tr>';
+            table += `<tr><td>Tax Benefit on Depreciation ${createInfoTooltip('Tax savings from depreciation, calculated as (Annual Depreciation * Tax Rate).')}</td><td class="text-right"> - </td>`;
+            inflows.depreciationBenefit.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, inflows.depreciationBenefit))}</td></tr>`;
+
+            if (financeModeVal === 'loan') {
+                 table += `<tr><td>Tax Benefit on Interest ${createInfoTooltip('Tax savings from loan interest, calculated as (Annual Interest Payment * Tax Rate).')}</td><td class="text-right"> - </td>`;
+                inflows.interestBenefit.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+                table += `<td class="text-right">${formatCurrency(npv(discountRate, inflows.interestBenefit))}</td></tr>`;
+            }
+            
+            table += `<tr><td>Residual Value ${createInfoTooltip('Value of laptops at the end of the term, calculated as (Initial Outlay * Residual Value Rate).')}</td>${Array(duration).fill('<td class="text-right"> - </td>').join('')}<td class="text-right">${formatCurrency(inflows.residualValue[duration-1])}</td><td class="text-right">${formatCurrency(inflows.residualValue[duration-1] / Math.pow(1+discountRate, duration))}</td></tr>`;
+            
+            // TOTALS
+            const totalBuyOutflowPV = outflows.initialOutlay[0] + npv(discountRate, outflows.financingCost) + npv(discountRate, outflows.maintenance) + npv(discountRate, outflows.productivityLoss);
+            const totalBuyInflowPV = npv(discountRate, inflows.depreciationBenefit) + (financeModeVal === 'loan' ? npv(discountRate, inflows.interestBenefit) : 0) + (inflows.residualValue[duration-1] / Math.pow(1+discountRate, duration));
+            
+            table += `<tr class="bg-gray-100 font-bold"><td class="text-gray-800">Total Net Present Cost (A - B)</td>${Array(duration+1).fill('<td></td>').join('')}<td class="text-right text-gray-800">${formatCurrency(totalBuyOutflowPV - totalBuyInflowPV)}</td></tr>`;
+            
+            table += '</tbody></table>';
+            document.getElementById('buyOutput').innerHTML = table;
+        }
+
+        function renderLeaseTable(outflows, inflows, duration) {
+            const discountRate = getFloatValue('discountRate') / 100;
+            let table = '<table class="w-full text-sm text-left text-gray-500 output-table"><tbody>';
+            table += generateTableHeader(duration);
+
+            // OUTFLOWS
+            table += '<tr class="bg-gray-200 font-semibold"><td colspan="'+(duration+3)+'">A. CASH OUTFLOWS</td></tr>';
+
+            if (outflows.initialOutlay[0] > 0) {
+                 table += `<tr><td>Security Deposit ${createInfoTooltip('Upfront refundable payment made at the beginning of the lease.<br><b>Formula:</b> Initial Cost * Advance Payment %')}</td><td class="text-right">${formatCurrency(outflows.initialOutlay[0])}</td>${Array(duration).fill('<td class="text-right"> - </td>').join('')}<td class="text-right">${formatCurrency(outflows.initialOutlay[0])}</td></tr>`;
+            }
+
+            table += `<tr><td>Annual Lease Installments ${createInfoTooltip('Total annual rent payment.<br><b>Formula:</b> (Initial Cost * Monthly Rate * 12)')}</td><td class="text-right"> - </td>`;
+            outflows.rent.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, outflows.rent))}</td></tr>`;
+
+            table += `<tr><td>Productivity Loss ${createInfoTooltip('Lower productivity loss is assumed under leasing due to better support.<br><b>Formula:</b> (Total Emp Salary) * (Productivity Loss % / 4)')}</td><td class="text-right"> - </td>`;
+            outflows.productivityLoss.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, outflows.productivityLoss))}</td></tr>`;
+            
+            // INFLOWS
+            table += '<tr class="bg-gray-200 font-semibold"><td colspan="'+(duration+3)+'">B. CASH INFLOWS</td></tr>';
+            table += `<tr><td>Tax Benefit on Lease Expense ${createInfoTooltip('Tax savings from total lease expense, recognized evenly over the term.<br><b>Formula:</b> (Annual Lease Expense) * Tax Rate')}</td><td class="text-right"> - </td>`;
+            inflows.taxBenefit.forEach(c => table += `<td class="text-right">${formatCurrency(c)}</td>`);
+            table += `<td class="text-right">${formatCurrency(npv(discountRate, inflows.taxBenefit))}</td></tr>`;
+
+            if (inflows.depositRefund[duration-1] > 0) {
+                 table += `<tr><td>Security Deposit Refund ${createInfoTooltip('Refund of the initial security deposit at the end of the lease term.')}</td>${Array(duration).fill('<td class="text-right"> - </td>').join('')}<td class="text-right">${formatCurrency(inflows.depositRefund[duration-1])}</td><td class="text-right">${formatCurrency(inflows.depositRefund[duration-1] / Math.pow(1+discountRate, duration))}</td></tr>`;
+            }
+
+            // TOTALS
+            const totalLeaseOutflowPV = (outflows.initialOutlay[0] || 0) + npv(discountRate, outflows.rent) + npv(discountRate, outflows.productivityLoss);
+            const totalLeaseInflowPV = npv(discountRate, inflows.taxBenefit) + (inflows.depositRefund[duration-1] / Math.pow(1+discountRate, duration));
+            
+            table += `<tr class="bg-gray-100 font-bold"><td class="text-gray-800">Total Net Present Cost (A - B)</td>${Array(duration+1).fill('<td></td>').join('')}<td class="text-right text-gray-800">${formatCurrency(totalLeaseOutflowPV - totalLeaseInflowPV)}</td></tr>`;
+
+            table += '</tbody></table>';
+            document.getElementById('leaseOutput').innerHTML = table;
+        }
+
+        function renderSummaryTable(buyCost, leaseCost, buyOutflowPV, buyInflowPV, leaseOutflowPV, leaseInflowPV) {
+            const savings = buyCost - leaseCost;
+            const savingsPercent = (savings / buyCost) * 100;
+            const recommendation = savings > 0 
+                ? '<span class="text-green-600 font-bold">Lease Option is Recommended</span>' 
+                : '<span class="text-red-600 font-bold">Buy Option is Recommended</span>';
+            
+            let table = `<table class="w-full text-md output-table">
+                <tr class="bg-gray-100 text-left font-semibold uppercase tracking-wider text-gray-700 text-sm">
+                    <th>Metric</th>
+                    <th class="text-right">Buy Option (PV)</th>
+                    <th class="text-right">Lease Option (PV)</th>
+                </tr>
+                <tbody>
+                    <tr>
+                        <td class="font-semibold text-gray-600">Total Outflow (PV)</td>
+                        <td class="text-right">${formatCurrency(buyOutflowPV)}</td>
+                        <td class="text-right">${formatCurrency(leaseOutflowPV)}</td>
+                    </tr>
+                     <tr>
+                        <td class="font-semibold text-gray-600">Total Inflow (PV)</td>
+                        <td class="text-right">${formatCurrency(buyInflowPV)}</td>
+                        <td class="text-right">${formatCurrency(leaseInflowPV)}</td>
+                    </tr>
+                    <tr class="font-bold text-lg border-t-2">
+                        <td class="text-gray-800">Net Present Cost</td>
+                        <td class="text-right ${buyCost > leaseCost ? 'text-red-500' : 'text-green-500'}">${formatCurrency(buyCost)}</td>
+                        <td class="text-right ${leaseCost > buyCost ? 'text-red-500' : 'text-green-500'}">${formatCurrency(leaseCost)}</td>
+                    </tr>
+                </tbody>
+            </table>
+            <div class="mt-6 p-4 rounded-lg text-center ${savings > 0 ? 'bg-green-50' : 'bg-red-50'}">
+                <p class="text-lg">Savings with ${savings > 0 ? 'Lease' : 'Buy'}: <strong>${formatCurrency(Math.abs(savings))}</strong> (${Math.abs(savingsPercent).toFixed(2)}%)</p>
+                <p class="text-xl mt-2">${recommendation}</p>
+            </div>`;
+
+            document.getElementById('summary').innerHTML = table;
+        }
+
+         function renderInternalTable(initialCost, duration, totalLeaseIncome, commissionRate, financingCostRate) {
+            const commissionAmount = totalLeaseIncome * commissionRate;
+            const financingCostAmount = initialCost * financingCostRate * duration;
+            const netProfit = totalLeaseIncome - initialCost - commissionAmount - financingCostAmount;
+
+             let table = `<table class="w-full text-md output-table">
+                <tbody>
+                    <tr><td class="font-semibold text-gray-600 w-1/2">Total Lease Income</td><td class="text-right">${formatCurrency(totalLeaseIncome)}</td></tr>
+                    <tr><td class="font-semibold text-gray-600">(-) Cost of Asset</td><td class="text-right">${formatCurrency(initialCost)}</td></tr>
+                    <tr><td class="font-semibold text-gray-600">(-) Sales Commission</td><td class="text-right">${formatCurrency(commissionAmount)}</td></tr>
+                    <tr><td class="font-semibold text-gray-600">(-) Financing Cost</td><td class="text-right">${formatCurrency(financingCostAmount)}</td></tr>
+                    <tr class="font-bold text-lg border-t-2">
+                        <td class="text-gray-800">Net Profit / (Loss)</td>
+                        <td class="text-right ${netProfit >= 0 ? 'text-green-600' : 'text-red-600'}">${formatCurrency(netProfit)}</td>
+                    </tr>
+                </tbody>
+            </table>`;
+            document.getElementById('internalOutput').innerHTML = table;
+        }
+
+    });
+    </script>
+
+</body>
+</html>
